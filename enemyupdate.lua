@@ -29,7 +29,7 @@ function enemydata(self)
     end
     self.initialized=nil
 
-    self.health=data.currentrarity.id1^(1+self.rarity)
+    self.health=data.currentrarity.id1*(10)*(1+self.rarity)
     self.quad=player.quad
     self.x=math.random(-love.graphics.getWidth()*1.5,1.5*love.graphics.getWidth())
     self.y=math.random(-love.graphics.getHeight()*1.5,1.5*love.graphics.getHeight())

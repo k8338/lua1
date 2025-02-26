@@ -40,7 +40,7 @@ function player:attack()
         if player.mainweapon.specialprocess<player.mainweapon.specialmaxval then
           player.mainweapon.specialprocess= player.mainweapon.specialprocess+1
           if player.mainweapon.specialmaxval==player.mainweapon.specialprocess then
-            player.mainweapon.acquirestate="true"
+            player.mainweapon.acquirestate="acquired"
         end
         end
         data.currentkills=data.currentkills+1

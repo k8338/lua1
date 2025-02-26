@@ -5,7 +5,7 @@ function env.drawUI()
     love.graphics.rectangle("line",data.weapondisplay1.x-200,data.weapondisplay1.y-50,200,150)
     love.graphics.print(player.mainweapon.name,data.weapondisplay1.x-200+20,data.weapondisplay1.y-50+20)
     love.graphics.setFont(data.curfontI)
-love.graphics.print(player.mainweapon.rarity,data.weapondisplay1.x-200+20,data.weapondisplay1.y-50+10)
+    love.graphics.print(player.mainweapon.rarity,data.weapondisplay1.x-200+20,data.weapondisplay1.y-50+10)
     love.graphics.setFont(data.curfont)
     love.graphics.printf(player.mainweapon.specialdescription,data.weapondisplay1.x-200+20,data.weapondisplay1.y-50+25+data.fontsize*2,200-3*data.fontsize)
   end
@@ -22,12 +22,14 @@ love.graphics.print(player.mainweapon.rarity,data.weapondisplay1.x-200+20,data.w
   love.graphics.rectangle("line",data.weapondisplay1.x,data.weapondisplay1.y,data.weapondisplay1.width,data.weapondisplay1.height)
   love.graphics.rectangle("line",data.weapondisplay2.x,data.weapondisplay2.y,data.weapondisplay2.width,data.weapondisplay1.height)
   love.graphics.print("Primary weapon: ",data.weapondisplay1.x+5,data.weapondisplay1.y+(data.weapondisplay1.height-data.fontsize)/2)
+  love.graphics.draw(player.mainweapon.sprite,player.mainweapon.quad,data.weapondisplay1.x+120,data.weapondisplay1.y+(data.weapondisplay1.height-data.fontsize/2),player.mainweapon.angle,0.5,0.5)
   love.graphics.setFont(data.curfontI)
   love.graphics.print(player.mainweapon.acquirestate,data.weapondisplay1.x+40+data.curfontI:getWidth("Primary weapon:   "),data.weapondisplay1.y+(data.weapondisplay1.height-data.fontsize)/2)
   love.graphics.setFont(data.curfont)
   if player.secondweapon.name  then
     
   love.graphics.print("Secondary weapon: ",data.weapondisplay2.x+5,data.weapondisplay2.y+(data.weapondisplay2.height-data.fontsize)/2) 
+  love.graphics.draw(player.secondweapon.sprite,player.secondweapon.quad,data.weapondisplay2.x+120,data.weapondisplay2.y+(data.weapondisplay2.height-data.fontsize/2),player.secondweapon.angle,0.5,0.5)
   love.graphics.setFont(data.curfontI)
   love.graphics.print(player.secondweapon.acquirestate,data.weapondisplay2.x+40+data.curfontI:getWidth("Secondary weapon:   "),data.weapondisplay2.y+(data.weapondisplay2.height-data.fontsize)/2)
   love.graphics.setFont(data.curfont)
