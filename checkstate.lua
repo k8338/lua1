@@ -21,6 +21,29 @@ function env.distance(x1,y1,x2,y2)
   return math.sqrt((x1-x2)^2+(y1-y2)^2)
 end
 
+function data.movebytouch(self)
+  if data.x-data.pan.trx >0 then
+
+     self.theta=math.atan((data.y-data.pan.try)/(data.x-data.pan.trx))
+    else
+         self.theta=math.atan((data.y-data.pan.try)/(data.x-data.pan.trx))+math.pi
+
+    end
+ 
+
+    self.x=self.x-math.cos(self.theta)*player.speed*data.dt
+    self.y=self.y-math.sin(self.theta)*player.speed*data.dt
+
+  end
+
+
+function data.drawTouch()
+  for _, id in ipairs(touches) do
+  x,y=  love.touch.getPosition(id)
+  love.graphics.circle("fill", x, y, 20)
+end
+end
+
 function env.checktouch()
   data.move=false
   touches = love.touch.getTouches()
@@ -30,7 +53,23 @@ function env.checktouch()
      data.move=true
      data.x=x
      data.y=y
+     data.movebytouch(data.background)
+     if math.abs(data.pan.trx-x)>math.abs(data.pan.try-y) then
+      if data.pan.trx-x>0 then
+        player.direction="left"
+      else
+        player.direction="right"
+      end
+    else
+      if data.pan.try-y >0 then
+        player.direction="down"
+      else
+        player.direction="up"
+      end
+     end
+ 
     end
+
     if x>=love.graphics.getWidth()/2 and y > 1/5*love.graphics.getHeight() then
       if player.attacktimer<=0 then
         player:attack()
@@ -41,7 +80,7 @@ function env.checktouch()
     if data.pickupbutton.timer<=0 and env.distance(x,y,data.pickupbutton.x,data.pickupbutton.y)<=20 then --pickupbutton
       data.pickupbutton.timer=0.5
       for _,weapon in ipairs(data.weapons) do
-        if  env.distance(weapon.x,weapon.y,love.graphics.getWidth()/2,love.graphics.getHeight()/2) <50 and weapon.visible==true then
+        if  env.distance(weapon.x,weapon.y,love.graphics.getWidth()/2,love.graphics.getHeight()/2) <100 and weapon.visible==true then
            player:pickupitem(weapon.id)
         end
       end
@@ -58,7 +97,7 @@ function env.checktouch()
     end
   end
   
-  if data.weapondisplay1.timer<=0 and  x-data.weapondisplay1.x<=data.weapondisplay1.width and y-data.weapondisplay1.y<=data.weapondisplay1.height  then
+  if data.weapondisplay1.timer<=0 and  x-data.weapondisplay1.x<=data.weapondisplay1.width and x-data.weapondisplay1.x>=0 and y-data.weapondisplay1.y<=data.weapondisplay1.height and y-data.weapondisplay1.y>=0 then
     if data.weapondisplay1.state=="open" then
     data.weapondisplay1.state="closed"
     data.weapondisplay1.timer=0.5
@@ -68,7 +107,7 @@ function env.checktouch()
     end
   end
   
-  if data.weapondisplay2.timer<=0 and x-data.weapondisplay2.x<=data.weapondisplay2.width and y-data.weapondisplay2.y<=data.weapondisplay2.height then
+  if data.weapondisplay2.timer<=0 and x-data.weapondisplay2.x<=data.weapondisplay2.width and x-data.weapondisplay2.x>=0 and y-data.weapondisplay2.y<=data.weapondisplay2.height and y-data.weapondisplay2.y>=0 then
     if data.weapondisplay2.state=="open" then
     data.weapondisplay2.state="closed"
     data.weapondisplay2.timer=0.5
@@ -87,13 +126,21 @@ function env.checktouch()
 end
 end
 
+function env.checkCollision2(player, objects,offset1)
+  if  player.x -2*offset1 < object.x + object.width and
+  player.x +2*offset1+ player.width > object.x and
+  player.y -2*offset1 < object.y + object.height and
+  player.y +2*offset1+ player.height > object.y then
+  return true
+  end
+end
   function env.checkCollision(player, objects,offset1,type)
 
     for index, object in ipairs(objects) do
-      if  player.x -offset1 < object.x + object.width and
-          player.x -offset1+ player.width > object.x and
-          player.y -offset1 < object.y + object.height and
-          player.y -offset1+ player.height > object.y then
+      if  player.x -2*offset1 < object.x + object.width and
+          player.x +2*offset1+ player.width > object.x and
+          player.y -2*offset1 < object.y + object.height and
+          player.y +2*offset1+ player.height > object.y then
           
           if type=="triggeritem" then
             objects[index].inrange=true

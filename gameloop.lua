@@ -1,42 +1,31 @@
 function env.gameloop:enter()
-    
-    data.fontsize=14
-  data.fontaddress1="fonts/Qaz/Qaz-Regular.ttf"
-  data.fontaddress1I="fonts/Qaz/Qaz-Italic.ttf"
-  data.Isometric_Black="fonts/3DIsometric_Font_1_14/3DIsometric-Black.ttf"
-  data.Isometric_Bold="fonts/3DIsometric_Font_1_14/3DIsometric-Bold.ttf"
-  data.Isometric_Regular="fonts/3DIsometric_Font_1_14/3DIsometric-Regular.ttf"
- data.curfont=love.graphics.newFont(data.fontaddress1,data.fontsize)
- data.curfontI = love.graphics.newFont(data.fontaddress1I,data.fontsize)
 
-  love.graphics.setFont(data.curfont)
 
-  if data.load=="false" then
-    data.readFile()
 
-  data.valueInit()
-  data.weaponSpawn()
-  data.playerInit()
-  data.entityUpdate()
-  else
-    data.readFile()
-  end
 end
 
 function env.gameloop:keypressed(key)
   if key=="ralt" then
     data.savefile()
   elseif key=="space" then
+    
     Gamestate.switch(env.mainmenu)
 
   end
 end
-
+-- function env.gameloop:touchreleased(id, x, y)
+--   if x >= data.menu_saved.x and x <= data.menu_saved.x + data.menu_saved.width and
+--      y >= data.menu_saved.y and y <= data.menu_saved.y + data.menu_saved.height then
+--       data.timer2=3
+--       data.savefile()
+--   end
+-- end
 function env.gameloop:update(dt)
+ data.dt=dt
+ data.gamedtime=data.gamedtime+dt
     data.background.X=data.background.x
     data.background.Y=data.background.y
     math.randomseed(os.time()+dt)
-    player:DirectionUpdate2()
     data.weapondisplay2.timer=data.weapondisplay2.timer-dt
     data.weapondisplay1.timer=data.weapondisplay1.timer-dt
     data.switchbutton.timer=data.switchbutton.timer-dt
@@ -44,30 +33,25 @@ function env.gameloop:update(dt)
     data.pullbutton.timer=data.pullbutton.timer-dt
     data.pickupbutton.timer=data.pickupbutton.timer-dt
     data.beAttackedTimer=data.beAttackedTimer-dt
+    data.ftimer=data.ftimer-dt
 
     env.loadTiles()
     env.checktouch()
-    player:DirectionUpdate()
+
+    -- env.checkCollision(player, walls,0,"walls")
+    -- env.checkCollision(player, triggeritems,0,"triggeritem")
+    -- env.checkEdge()
+    if not data.isColliding then
   
-    
-    env.checkCollision(player, walls,0,"walls")
-    env.checkCollision(player, triggeritems,0,"triggeritem")
-    env.checkEdge()
-    
-    if data.move==true and not data.isColliding then
-  
-        data.movebytouch(data.background)
-        env.backGroundUpdate()
+        -- data.movebytouch(data.background)
+        -- env.backGroundUpdate()
         player:DirectionUpdate()
-  
-  
+
     end
-  
-    
     data.valueUpdate()
-    data.entityUpdate()
+    -- data.entityUpdate()
     
-    env.checkTrigger()
+    -- env.checkTrigger()
     env.updateAllEnemy(enemies)
     
     data.attackedUpdate()
@@ -96,18 +80,28 @@ function env.gameloop:update(dt)
   end
   data.background.dx=data.background.x-data.background.X
   data.background.dy=data.background.y-data.background.Y
-  
+
+  if player.health<=0 then
+    Gamestate.switch(env.closemenu)
+  end
 end
 
 function env.gameloop:draw()
     env.drawthebackground()
-    env.InteracAnimUpdate()
+    -- env.InteracAnimUpdate()
    env.drawEnemy(enemies)
+  env.drawrarity()
+  env.drawfading()
     player:draw()
    env.weapondraw()
     player:drawattack()
     env.drawUI()
     data.drawTouch()
+    -- if data.timer2>0 then
+    --   love.graphics.print("Current game saved.",data.menu_saved.x-200,data.menu_saved.y+15)
+    --   data.timer2=data.timer2-data.dt
+    -- end
+
   end
 
 return env,data

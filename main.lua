@@ -14,6 +14,8 @@ player.secondweapon={}
 env.mainmenu={}
 env.gameloop={}
 env.saveinterface={}
+env.closemenu={}
+env.interval={}
 
 require ("data")
 require	("playerupdate")
@@ -25,6 +27,8 @@ require	("UIupdate")
 require	("weaponUpdate")
 require("mainmenu")
 require("gameloop")
+require("closemenu")
+require("interval")
 
 function HSL(h, s, l, a)
 	if s<=0 then return l,l,l,a end
@@ -42,7 +46,17 @@ function HSL(h, s, l, a)
 end
 
 function love.load()
-	data.load="false"
+	data.fontsize=14
+	data.Qaz=love.graphics.newFont("fonts/Qaz/Qaz-Regular.ttf",data.fontsize)
+	data.QazI=love.graphics.newFont("fonts/Qaz/Qaz-Italic.ttf",data.fontsize)
+	data.Isometric_Black=love.graphics.newFont("fonts/3DIsometric_Font_1_14/3DIsometric-Black.ttf",data.fontsize)
+	data.Isometric_Bold=love.graphics.newFont("fonts/3DIsometric_Font_1_14/3DIsometric-Bold.ttf",data.fontsize)
+	data.Isometric_Regular=love.graphics.newFont("fonts/3DIsometric_Font_1_14/3DIsometric-Regular.ttf",data.fontsize)
+   data.curfont=data.Qaz
+   data.curfontI = data.QazI
+   data.havesave=false
+	love.graphics.setFont(data.curfont)
+	data.load=false
 	Gamestate.registerEvents()
 	Gamestate.switch(env.mainmenu)
 

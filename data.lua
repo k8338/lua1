@@ -10,11 +10,13 @@ function data.loadfile()
       table.insert(env, line)
     end
     for line in love.filesystem.lines("enemies.txt") do
-      table.insert(env, line)
+      table.insert(enemies, line)
     end
   end
   
 function data.valueUpdate()
+  data.playerstats.content="Your attack: "..player.additionalAttack.."  \nAttack speed: "..player.attackspeed.." \nAttack range: "..player.attackrange.."  \nDamage amplification: "..player.damageamp.."%  \nCrit Chance: "..player.critrate.."%  \nCrit Damage: "..player.critdam.."%  \nHealth: "..player.maxhealth.."  \nDefence: "..player.defence.."  \nLife steal: "..player.lifesteal.."%  \nDodge: "..player.dodge.."%  \nInstant kill: "..player.instantkira.."%  \nDefence reduction: "..player.defenceredu.."%  \nDefence reduction duration: "..player.defenceredudur.."seconds.  \nMovement speed: "..player.speed/100
+
   player.trx=math.abs(-player.x +love.graphics.getWidth()/2)-player.width/2
   player.try=math.abs(-player.y +love.graphics.getHeight()/2)-player.height/2
 
@@ -59,7 +61,7 @@ function data.savefile()
     love.filesystem.write("playervalue.txt", data.serializeTable(player))
     love.filesystem.write("initvalue.txt", data.serializeTable(data))
     love.filesystem.write("env.txt", data.serializeTable(env))
-    love.filesystem.write("env.txt", data.serializeTable(enemies))
+    love.filesystem.write("enemies.txt", data.serializeTable(enemies))
 
 end
 function data.readFile()
@@ -95,54 +97,44 @@ function data.valueInit()
     data.movetoedge=false
     data.edge_x=false
     data.edge_y=false
-    -- data.elements={"fire","metal","artificiality","shards","patina","dust","depiction"}
     data.elements={"fire","earth","electron","wind","flow","water","deception"} --打完每个元素的怪之后掉落一个即时启动的技能
     data.elements={"fire","wind","water"}
     data.n=0
     data.additionalAttack=0
-  
     data.beAttackedTimer=0.5
     data.currentkills=0
     data.currentscore=0
     data.rarity1={"Common","Uncommon","Rare","Epic","Legendary","Mythic","Ancient","Divine","Celestial","Transcendent","Ethereal","Apocalyptic","Omniscient","Primordial"}
-    data.currentrarity={name="Common",id1=1}
-
-    data.skillsheet={"defence reduction","attack","defence","dodge rate","movement speed","attack speed","attack range","instant kill rate","life steal rate","damage amplification","health points","critical strike chance","critical strike damage (base damage: 120%)"}
-    data.skillsheet1={}
-    data.skillsheet2={"defence reduction"}
-    local meta = {
-      __index = function(table, key)
-          if key == "attack" then
-              return  weapon_value
-          elseif key == "defence" then
-              return 100 * 1.5 
-            elseif key == "dodge rate" then
-              return 100 * 1.5 
-            elseif key == "movement speed" then
-              return 100 * 1.5 
-            elseif key == "attack speed" then
-              return 100 * 1.5
-            elseif key == "attack range" then
-              return 100 * 1.5
-            elseif key == "instant kill rate" then
-              return 100 * 1.5
-            elseif key == "life steal rate" then
-              return 100 * 1.5
-            elseif key == "damage amplification" then
-              return 100 * 1.5
-            elseif key == "health points" then
-              return 100 * 1.5
-            elseif key == "critical strike chance" then
-              return 100 * 1.5
-            elseif key == "critical strike damage (base damage: 120%)" then
-              return 100 * 1.5
-          end
-      end
-  }
-  setmetatable(data.skillsheet1,meta)
+    data.currentrarity={id1=1}
+    data.upgraderarity()
+    data.rand=0
+    data.skillsheet={["attack's defence reduction duration"]=25,["attack's defence reduction"]=3,
+    ["attack"]=10,["defence"]=5,["dodge rate"]=1,["movement speed"]=10,["attack speed"]=5,["attack range"]=10,
+    ["instant kill rate"]=0.1,["life steal rate"]=15,["damage amplification"]=5,["max health"]=15,["critical strike chance"]=7,
+    ["critical strike damage"]=20}
     
-    data.weapons={}
+    data.skillkeys =  {
+      "attack's defence reduction duration",
+      "attack's defence reduction",
+      "attack",
+      "defence",
+      "dodge rate",
+      "movement speed",
+      "attack speed",
+      "attack range",
+      "instant kill rate",
+      "life steal rate",
+      "damage amplification",
+      "max health",
+      "critical strike chance",
+      "critical strike damage"
+  }
 
+    data.weapons={}
+    data.dt=0
+    data.alpha=0
+    data.fades=2
+    data.ftimer=2
     data.weaponamount=0
     data.pan={x=love.graphics.getWidth()/25,y=love.graphics.getHeight()*1/3,scale=2/3*love.graphics.getHeight()/sprite.pan:getHeight()}
     data.pan.trx=data.pan.x+sprite.pan:getWidth()/2*data.pan.scale
@@ -164,7 +156,8 @@ data.pullbutton={state="none",x=love.graphics.getWidth()/2-sprite.pullbutton:get
 data.elembar={}
 data.elembar.sprite=love.graphics.newImage("maps/10.png")
 data.elembar={state="none",sprite=love.graphics.newImage("maps/10.png"),x=love.graphics.getWidth()/2-data.elembar.sprite:getWidth()/2,y=love.graphics.getHeight()}
-data.fire={sprite=love.graphics.newImage("maps/11.png"),x=data.elembar.x+data.elembar.sprite:getWidth()/7,y=data.elembar.y-5,timer=0}
+data.playerstats={x=data.elembar.x+data.elembar.sprite:getWidth()/7,y=data.elembar.y-5,timer=0}
+
 data.pickupbutton={}
 data.pickupbutton.sprite=nil
 data.pickupbutton={timer=0,sprite=nil,x=love.graphics.getWidth()/5*3,y=love.graphics.getHeight()/2}
@@ -172,18 +165,20 @@ data.switchbutton={}
 data.switchbutton.sprite=nil
 data.switchbutton={timer=0,sprite=nil,x=love.graphics.getWidth()*7/8,y=love.graphics.getHeight()*4/7}
 data.weaponcontainer={}
-data.weapondisplay1={state="closed",x=love.graphics.getWidth()*3/5,y=love.graphics.getHeight()*1/6,height=40}
+data.weapondisplay1={x=love.graphics.getWidth()*3/5}
 data.weapondisplay1={timer=0,state="closed",x=love.graphics.getWidth()*3/5,y=love.graphics.getHeight()*1/6,height=data.fontsize*2,width=love.graphics.getWidth()-data.weapondisplay1.x-10}
 data.weapondisplay2={timer=0,state="closed",x=love.graphics.getWidth()*3/5,y=data.weapondisplay1.y+data.weapondisplay1.height,height=data.fontsize*2,width=love.graphics.getWidth()-data.weapondisplay1.x-10}
 data.enemycounts=0
+data.sum=3
+data.alpha2=0
+data.fading={"You have gained the sword’s power; now it’s time to find a new one.","You have successfully mastered the power of this sword; it now bestows its blessing upon you.","You have mastered the power of this sword; its physical form departs automatically."}
+data.fadingrand=math.random(1,#data.fading)
+data.gamedtime=0
+data.timer2=0
 end
   
-function data.updaterarity()
-  data.currentrarity.id1=data.currentrarity.id1+1
-  if data.currentrarity.id1% #data.rarity1 ==0 then
-    data.currentrarity.id1=data.currentrarity.id1+1
-  end
-  data.currentrarity.name=string.rep(data.rarity1[#data.rarity1]..".",math.floor(data.currentrarity.id1 / #data.rarity1) ) .. data.rarity1[data.currentrarity.id1% #data.rarity1 ]
+function data.upgraderarity()
+  data.currentrarity.name=string.rep(data.rarity1[#data.rarity1]..".",math.floor((data.currentrarity.id1-1) / #data.rarity1) ) .. data.rarity1[(data.currentrarity.id1-1)% (#data.rarity1)+1 ]
 
 end
 
@@ -200,11 +195,11 @@ function data.serializeTable(tbl)
 end
 
   function data.playerInit()
-    player.additionalAttack=10
+    player.additionalAttack=100
     player.height=20*3
     player.width=16*3
-    player.x=(love.graphics.getWidth()-player.width)/2
-    player.y=(love.graphics.getHeight()-player.height)/2
+    player.x=(love.graphics.getWidth())/2
+    player.y=(love.graphics.getHeight())/2
     player.trx=math.abs(-player.x +love.graphics.getWidth()/2)-player.width/2
     player.try=math.abs(-player.y +love.graphics.getHeight()/2)-player.height/2
     player.quad=love.graphics.newQuad(0+data.newframes*16,data.n,16,20,sprite.character:getWidth(),sprite.character:getHeight())
@@ -218,7 +213,7 @@ end
     player.detectionrange=1000
     player.bullets = {}
     player.isMoving=0
-    player.speed=2
+    player.speed=300
     player.isattacking= false
     player.stockedattack=0
     player.direction="down"
@@ -226,8 +221,23 @@ end
     player.X =player.trx
     player.Y=player.try
     player.theta=nil
-    player.attacktimer=0
+    player.defence=5
+    player.attacktimer=player.mainweapon.speed
     player.elements={fire=0,wind=0,water=0}
+    player.dodge=0
+    player.attackrange=player.mainweapon.length
+    player.instantkira=0
+    player.abilityrequired=0
+    player.lifesteal=0
+    player.damageamp=0
+    player.maxhealth=100
+    player.critrate=0
+    player.critdam=120
+    player.defenceredu=0
+    player.defenceredudur=3
+    player.attackspeed=math.floor(1/player.attacktimer)
+    data.playerstats.content="Your attack: "..player.additionalAttack.."  \nAttack speed: "..(player.attackspeed).." \nAttack range: "..player.attackrange.."  \nDamage amplification: "..player.damageamp.."%  \nCrit Chance: "..player.critrate.."%  \nCrit Damage: "..player.critdam.."%  \nMax health: "..player.maxhealth.."  \nDefence: "..player.defence.."  \nLife steal: "..player.lifesteal.."%  \nDodge: "..player.dodge.."%  \nInstant kill: "..player.instantkira.."%  \nDefence reduction: "..player.defenceredu.."%  \nDefence reduction duration: "..player.defenceredudur.."seconds.  \nMovement speed: "..player.speed/100
+    
   end
   
 return data,env

@@ -7,8 +7,8 @@ function enemychasing(self,player)
         self.theta=math.atan((player.y-self.y)/(player.x-self.x))+math.pi
 
     end
-    self.x=self.x+math.cos(self.theta)*self.random
-    self.y=self.y+math.sin(self.theta)*self.random
+    self.x=self.x+math.cos(self.theta)*self.random*self.speed*data.dt
+    self.y=self.y+math.sin(self.theta)*self.random*self.speed*data.dt
 
 end
 
@@ -28,22 +28,28 @@ function enemydata(self)
         self.rarity = 2   -- Rare
     end
     self.initialized=nil
-
-    self.health=data.currentrarity.id1*(10)*(1+self.rarity)
-    self.quad=player.quad
-    self.x=math.random(-love.graphics.getWidth()*1.5,1.5*love.graphics.getWidth())
-    self.y=math.random(-love.graphics.getHeight()*1.5,1.5*love.graphics.getHeight())
     self.sprite=love.graphics.newImage("maps/8.png")
-    self.width=self.sprite:getWidth()
-    self.height=self.sprite:getHeight()
+    self.width=self.sprite:getWidth()*3
+    self.height=self.sprite:getHeight()*3
+    self.health=(10)*(self.rarity+data.currentrarity.id1)
+    self.quad=player.quad
+    if math.random(0,1)==1 then
+        self.x=math.random(-love.graphics.getWidth(),0)
+        self.y=math.random(-love.graphics.getHeight(),0)
+    else
+        self.x=math.random(love.graphics.getWidth(),2*love.graphics.getWidth())
+        self.y=math.random(love.graphics.getHeight(),2*love.graphics.getHeight())
+    end
     self.distance=math.sqrt((player.x-self.x)^2+(player.y-self.y)^2)
-    self.speed= math.random(1,6)
-    self.attack = 10*(self.rarity+1)
+    self.speed= math.random(1,3)*0.8*200
+    self.attack = 10*(self.rarity+data.currentrarity.id1)
     self.random=math.random(1,5)/10
     self.attackedtimer=0.12
     self.r=1
     self.g=1
     self.b=1
+    self.defence=5*(self.rarity+data.currentrarity.id1)
+    self.defred={}
     self.element=math.random(1,3)
     self.h=(hsl_generate(self)-1)/359
     self.s=(self.attack-(player.additionalAttack)*1)/(4*(player.additionalAttack))*0.25+0.75
@@ -51,7 +57,6 @@ function enemydata(self)
     self.elename=data.elements[self.element]
     if self.rarity>=2 then
         self.color={math.random(5,25) ,math.random(75,165),math.random(215,245)}
-        
     end
 end
 
@@ -94,19 +99,16 @@ function env.drawEnemy(enemies)
     if self.attackedtimer<=0 then
         self.attackedtimer=0.12
     elseif self.attackedtimer <0.12  then
-        love.graphics.setColor(1,0,0)
+        love.graphics.setColor(1,0,0,1)
     end
 
 
     --element picked up 
-    print(player.y)
-    love.graphics.draw(self.sprite,self.quad,self.x+data.background.dx,self.y+data.background.dy,0,3,3)
+    love.graphics.draw(self.sprite,self.quad,self.x+data.background.dx-self.width/4,self.y+data.background.dy-self.height/4,0,3,3)
 
-    love.graphics.setColor(1,1,1)
+    love.graphics.setColor(1,1,1,1)
     love.graphics.setBlendMode("alpha")
-else
 
-    table.remove(enemies[i])
 end
     end
 end
@@ -117,15 +119,16 @@ function env.updateAllEnemy(enemies)
 if entity.x then
     entity.x=entity.x+data.background.dx
     entity.y=entity.y+data.background.dy
-    if env.distance(player.x,player.y,entity.x,entity.y) <= 2*love.graphics.getWidth() then
+    if env.distance(player.x,player.y,entity.x,entity.y) <= 1.2*love.graphics.getWidth() then
         data.enemycounts=data.enemycounts+1
     end
 else
     data.enemycounts=data.enemycounts+1
 
 end
+
     end
-    if data.enemycounts<=5 then
+    if data.enemycounts<=3+math.random(data.currentrarity.id1,data.currentrarity.id1+5) then
         enemies[#enemies+1] = {}
     end
     data.enemycounts=0
@@ -135,33 +138,48 @@ end
             enemydata(enemies[i])
             entity.initialized =true
         end
-        if entity.health>0 then
-        if env.distance(entity.x,entity.y,player.x,player.y)<=500 then
-
-        if math.random(0,2)==0 then
-        local o=math.random(0,3)
-        if o==0 then
-            local fakeplayer={x=entity.x+50,y=entity.y-50}
-            enemychasing(enemies[i],fakeplayer)
-
-
-        elseif o==1 then
-            local fakeplayer={x=entity.x-50,y=entity.y+50}
-
-            enemychasing(enemies[i],fakeplayer)
-
-        elseif o==2 then
-            local fakeplayer={x=entity.x+50,y=entity.y+50}
-
-            enemychasing(enemies[i],fakeplayer)
-        else
-            local fakeplayer={x=entity.x-50,y=entity.y-50}
-
-            enemychasing(enemies[i],fakeplayer)
-        end
-        else
-            enemychasing(enemies[i],player)
+        if (entity.defred)~=nil then
+            for i,element in ipairs(entity.defred) do
+                if element[1]>0 then
+                    entity.defred[i][1]=entity.defred[i][1]-data.dt
+                end
+                if element[1]<=0 then
+                    table.remove(entity.defred,i)
+                    entity.defence=entity.defence/element[2]
+                end
+            end        
             end
+            if entity.defence<0 then
+                entity.defence=0
+            end
+
+        if entity.health>0 then
+        if env.distance(entity.x,entity.y,player.x,player.y)<=1000 then
+            enemychasing(enemies[i],player)
+        -- if math.random(0,2)==0 then
+        -- local o=math.random(0,3)
+        -- if o==0 then
+        --     local fakeplayer={x=entity.x+50,y=entity.y-50}
+        --     enemychasing(enemies[i],fakeplayer)
+
+
+        -- elseif o==1 then
+        --     local fakeplayer={x=entity.x-50,y=entity.y+50}
+
+        --     enemychasing(enemies[i],fakeplayer)
+
+        -- elseif o==2 then
+        --     local fakeplayer={x=entity.x+50,y=entity.y+50}
+
+        --     enemychasing(enemies[i],fakeplayer)
+        -- else
+        --     local fakeplayer={x=entity.x-50,y=entity.y-50}
+
+        --     enemychasing(enemies[i],fakeplayer)
+        -- end
+        -- else
+        --     enemychasing(enemies[i],player)
+        --     end
          end
       
         
