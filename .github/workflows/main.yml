@@ -1,25 +1,25 @@
 ---
-  name: Build love android
-  id: build-love
-  uses: love-actions/love-actions-android@v2
-  with:
-    app-name: My Love Game
-    bundle-id: org.love2d.my_game
-    resource-path: ./assets/android/res
-    icon-specifier: "@mipmap/app"
-    love-ref: "11.5"
-    love-patch: ./love.patch
-    love-package: ./game.love
-    libs-path: ./assets/android/libs
-    extra-assets: ./README.md ./license.txt
-    product-name: my-game
-    version-string: 2.3.4
-    version-code: 234
-    output-folder: ./dist
-    keystore-alias: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
-    keystore-base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-    keystore-key-password: ${{ secrets.ANDROID_KEYSTORE_KEYPASSWORD }}
-    keystore-store-password: ${{ secrets.ANDROID_KEYSTORE_STOREPASSWORD }}
+name: Build love android
+id: build-love
+uses: love-actions/love-actions-android@v2
+with:
+  app-name: My Love Game
+  bundle-id: org.love2d.my_game
+  resource-path: ./assets/android/res
+  icon-specifier: "@mipmap/app"
+  love-ref: "11.5"
+  love-patch: ./love.patch
+  love-package: ./game.love
+  libs-path: ./assets/android/libs
+  extra-assets: ./README.md ./license.txt
+  product-name: my-game
+  version-string: 2.3.4
+  version-code: 234
+  output-folder: ./dist
+  keystore-alias: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+  keystore-base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  keystore-key-password: ${{ secrets.ANDROID_KEYSTORE_KEYPASSWORD }}
+  keystore-store-password: ${{ secrets.ANDROID_KEYSTORE_STOREPASSWORD }}
 
 ---
 env:
