@@ -1,5 +1,5 @@
 ---
-- name: Build love android
+  name: Build love android
   id: build-love
   uses: love-actions/love-actions-android@v2
   with:
