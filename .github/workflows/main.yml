@@ -1,10 +1,6 @@
 
 on:
 
-  push:
-    branches:
-      - 'release/**'
-
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 ---
@@ -29,7 +25,3 @@ with:
   keystore-base64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
   keystore-key-password: ${{ secrets.ANDROID_KEYSTORE_KEYPASSWORD }}
   keystore-store-password: ${{ secrets.ANDROID_KEYSTORE_STOREPASSWORD }}
-
-
-          name: ${{ needs.get-info.outputs.base-name }}_Android_release
-          path: ${{ env.OUTPUT_FOLDER }}/${{ env.PRODUCT_NAME }}-release.apk
