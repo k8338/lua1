@@ -1,3 +1,12 @@
+
+on:
+
+  push:
+    branches:
+      - 'release/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
 ---
 name: Build love android
 id: build-love
